@@ -93,31 +93,41 @@ end
 #puts
 #puts v.deep_word 0
 
-def show_message(message)
-    width = message.length + 6
-    win = Window.new(5, width,
-                     (lines - 5) / 2, (cols - width) / 2)
-    win.box(?|, ?-)
-    win.setpos(2, 3)
-    win.addstr(message)
-    win.refresh
-    win.getch
-    win.close
-end
-
 v = get_verse "Jn 1:1"
 
 init_screen
 begin
     crmode
-    def_win = Window.new(3, 0, lines - 3, cols)
-    while getch != "q"
-        setpos(0,0)
-        addstr(v.get_words)
+    noecho
+    nl
+    verse_win = Window.new(3,cols,0,0)
+    def_win = Window.new(lines - 3, cols, 3, 0)
+    mychar = "-"
+    wordnum = 0
+    while mychar != "q"
+        verse_win.setpos(0,0)
+        verse_win.addstr(v.get_words)
         def_win.setpos(0,0)
-        def_win.addstr(v.deep_word 0)
-        win.refresh
-        refresh
+        def_win.addstr(v.deep_word wordnum)
+        def_win.refresh
+        verse_win.refresh
+        case mychar
+        when "h"
+            wordnum = wordnum - 1
+            wordnum = 0 if wordnum < 0
+        when "l"
+            wordnum = wordnum + 1
+        when "c"
+            echo
+            verse_win.clear
+            verse_win.refresh
+            verse_win.setpos(0,0)
+            new_verse = verse_win.getstr
+            v = get_verse new_verse
+            noecho
+            wordnum = 0
+        end
+        mychar = getch
     end
 ensure
     close_screen
